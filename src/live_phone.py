@@ -12,7 +12,7 @@ print("QuantEdge — Live Phone Camera Detection")
 print("=" * 45)
 
 # ── Load Model ───────────────────────────────
-model_path = r"C:\Users\pooji\OneDrive\Desktop\Face_detect_dumb_phone\blazeface.tflite"
+model_path = r"C:\Users\pooji\OneDrive\Desktop\Face_detect_dumb_phone\models\blazeface.tflite"
 interpreter = tflite.Interpreter(model_path=model_path)
 interpreter.allocate_tensors()
 input_details  = interpreter.get_input_details()
