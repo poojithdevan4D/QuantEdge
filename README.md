@@ -1,6 +1,19 @@
 # QuantEdge 🔬
 ### Hardware-Aware Face Detection on Samsung GT-S7392 (2013)
 
+> **Research Question:** Can a 224KB neural network run face detection
+> in real-time on a 2013 smartphone with no ML accelerator?
+> **Answer:** Yes — 8.7 FPS on ARM Cortex-A9. And INT8 quantization
+> is actually SLOWER than FP32 on this chip.
+> 
+**Key Finding:** INT8 is 1.35x SLOWER than FP32 on ARM Cortex-A9.
+
+## Demo
+
+![Face Detection Demo](results/detected1.jpg)
+
+*BlazeFace running on ARM Cortex-A9 @ 1GHz — face detected at 92% confidence*
+
 Running BlazeFace on ARM Cortex-A9 @ 1GHz | 512MB RAM | Android 4.1.2
 
 ---
