@@ -54,8 +54,9 @@ First push the files to your phone:
 ```bash
 adb push models/blazeface.tflite /sdcard/blazeface.tflite
 adb push arm/inference_arm /data/local/tmp/inference_arm
-adb push tflite_old/jni/armeabi-v7a/libtensorflowlite_jni.so /data/local/tmp/libtensorflowlite_jni.so
+adb push tflite_lib/libtensorflowlite_jni.so /data/local/tmp/libtensorflowlite_jni.so
 adb shell chmod 777 /data/local/tmp/inference_arm
+adb shell chmod 777 /data/local/tmp/libtensorflowlite_jni.so
 ```
 
 Then run inference ON the phone:
