@@ -2,3 +2,8 @@ tflite_old/
 tflite_old.aar 
 tmp_frame.png 
 *.aar 
+latest.jpg 
+result.txt 
+tmp_*.jpg 
+tmp_*.ppm 
+tmp_*.png 
