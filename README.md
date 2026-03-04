@@ -10,7 +10,7 @@
 
 ## Demo
 
-![Face Detection Demo](results/detected1.jpg)
+![Face Detection Demo](results/detected1.png)
 
 *BlazeFace running on ARM Cortex-A9 @ 1GHz — face detected at 92% confidence*
 
