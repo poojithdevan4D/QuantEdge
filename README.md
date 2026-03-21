@@ -60,19 +60,16 @@ Even with the widening overhead (INT8 → INT16 → INT32 accumulation), INT8 NE
 
 TFLite's internal kernel implementation determines whether quantization helps or hurts on ARMv7-A.
 Naive C code gives INT8 a penalty. Optimized NEON intrinsics give INT8 an advantage.
-=======
-Running BlazeFace on ARM Cortex-A9 @ 1GHz | 512MB RAM | Android 4.1.2
->>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
 
----
+Running BlazeFace on ARM Cortex-A9 @ 1GHz | 512MB RAM | Android 4.1.2
+
+
 
 ## What This Project Does
 
 Deploys a 224KB face detection model (BlazeFace) on a 2013 Samsung phone,
 benchmarks INT8 vs FP32 at three levels (scalar C, NEON intrinsics, TFLite runtime),
 and provides a microarchitectural explanation grounded in ARMv7-A NEON ISA analysis.
-
----
 
 ## Requirements
 - Python 3.10+
