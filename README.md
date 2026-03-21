@@ -1,14 +1,13 @@
 # QuantEdge 🔬
 ### Hardware-Aware Quantization on Samsung GT-S7392 (2013)
 
-<<<<<<< HEAD
+
 > **Research Question:** Does INT8 quantization actually improve inference speed on legacy ARM hardware?
 > **Answer:** It depends entirely on implementation quality — not the hardware.
 
 **Finding v1** (scalar C): INT8 is 1.35× SLOWER than FP32 — compiler confused by widening
 **Finding v2** (NEON intrinsics): INT8 NEON is 2.5× FASTER than FP32 NEON — hardware was never the problem
 
----
 =======
 > **Research Question:** Can a 224KB neural network run face detection
 > in real-time on a 2013 smartphone with no ML accelerator?
@@ -16,7 +15,6 @@
 > is actually SLOWER than FP32 on this chip.
 > 
 **Key Finding:** INT8 is 1.35x SLOWER than FP32 on ARM Cortex-A9.
->>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
 
 ## Demo
 
@@ -24,8 +22,6 @@
 
 *BlazeFace running on ARM Cortex-A9 @ 1GHz — face detected at 92% confidence*
 
-<<<<<<< HEAD
----
 
 ## Core Finding — March 2026
 
