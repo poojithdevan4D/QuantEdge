@@ -1,34 +1,77 @@
 # QuantEdge 🔬
-### Hardware-Aware Face Detection on Samsung GT-S7392 (2013)
+### Hardware-Aware Quantization on Samsung GT-S7392 (2013)
 
-Running BlazeFace on ARM Cortex-A9 @ 1GHz | 512MB RAM | Android 4.1.2
+> **Research Question:** Does INT8 quantization actually improve inference speed on legacy ARM hardware?
+> **Answer:** It depends entirely on implementation quality — not the hardware.
+
+**Finding v1** (scalar C): INT8 is 1.35× SLOWER than FP32 — compiler confused by widening
+**Finding v2** (NEON intrinsics): INT8 NEON is 2.5× FASTER than FP32 NEON — hardware was never the problem
+
+---
+
+## Demo
+
+![Face Detection Demo](results/detected1.png)
+
+*BlazeFace running on ARM Cortex-A9 @ 1GHz — face detected at 92% confidence*
+
+---
+
+## Core Finding — March 2026
+
+A Senior AI Engineer challenged the original INT8 result on LinkedIn. He was right to.
+
+The original benchmark used plain C loops. FP32 auto-vectorizes cleanly using `vmlaq_f32`.
+INT8 widening (INT8×INT8 → INT16 → INT32) confused the compiler into scalar fallback.
+The benchmark was measuring **compiler quality**, not hardware capability.
+
+With explicit NEON intrinsics — equal treatment for both precisions — the picture reverses completely:
+
+### NEON Benchmark — Samsung GT-S7392 (256×256 matmul, 10 runs)
+
+| Kernel | Implementation | Time | vs FP32 NEON |
+|---|---|---|---|
+| Scalar INT8 | Plain C, no SIMD | 384.67ms | 5.1× slower |
+| FP32 NEON | `vmlaq_f32` — 4 floats/instruction | 74.87ms | baseline |
+| INT8 NEON | `vmull_s8` — 8 pairs/instruction | 29.90ms | **2.5× faster** |
+
+### TFLite Full Model — BlazeFace FP32 on device
+
+| Stage | Hardware | Time | FPS |
+|---|---|---|---|
+| Laptop | Intel CPU + XNNPACK | 2.08ms | 479 |
+| Samsung GT-S7392 | ARM Cortex-A9 | 92ms steady | 10.8 |
+
+---
+
+## What This Means
+
+On ARM Cortex-A9, INT8 speedup is real — but **only** with explicit NEON kernels.
+
+`vmull_s8` processes 8 INT8 pairs per instruction vs FP32's 4 — theoretically 2× throughput.
+Even with the widening overhead (INT8 → INT16 → INT32 accumulation), INT8 NEON wins by 2.5×.
+
+**The critical variable is not the hardware. It is the runtime's kernel quality.**
+
+TFLite's internal kernel implementation determines whether quantization helps or hurts on ARMv7-A.
+Naive C code gives INT8 a penalty. Optimized NEON intrinsics give INT8 an advantage.
 
 ---
 
 ## What This Project Does
-Deploys a 224KB face detection model (BlazeFace) on a 2013 Samsung phone
-and benchmarks INT8 vs FP32 quantization on real ARM hardware.
 
----
-
-## Results
-| Stage | Hardware | Time | FPS |
-|---|---|---|---|
-| Laptop | Intel CPU | 2.08ms | 479 |
-| Phone (on-device) | ARM Cortex-A9 | 115ms | 8.7 |
-
-**Key Finding:** INT8 is 1.35x SLOWER than FP32 on ARM Cortex-A9.
-Quantization saves memory but not speed on this chip.
+Deploys a 224KB face detection model (BlazeFace) on a 2013 Samsung phone,
+benchmarks INT8 vs FP32 at three levels (scalar C, NEON intrinsics, TFLite runtime),
+and provides a microarchitectural explanation grounded in ARMv7-A NEON ISA analysis.
 
 ---
 
 ## Requirements
 - Python 3.10+
 - Android phone with USB Debugging enabled
-- Android NDK (for recompiling ARM binary)
+- Android NDK 29 (for cross-compiling ARM binaries)
 - ADB installed
 
-Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -37,39 +80,44 @@ pip install -r requirements.txt
 
 ## How To Run
 
-### 1. Laptop Webcam Detection
+### 1. NEON Benchmark (answers the quantization question)
 ```bash
-python src/facedetect.py
+# Compile
+armv7a-linux-androideabi21-clang.cmd -O2 -mfpu=neon -mfloat-abi=softfp \
+  -o arm/neon_bench_arm arm/neon_bench.c -lm
+
+# Push and run
+adb push arm/neon_bench_arm /data/local/tmp/neon_bench_arm
+adb shell chmod 777 /data/local/tmp/neon_bench_arm
+adb shell /data/local/tmp/neon_bench_arm
 ```
 
-### 2. Live Phone Camera Detection
-Connect your Android phone via USB, enable USB debugging, then:
+### 2. TFLite Inference Benchmark
+```bash
+# Compile
+armv7a-linux-androideabi21-clang.cmd -O2 -mfpu=neon -mfloat-abi=softfp \
+  -o arm/inference_bench arm/inference_bench.c \
+  -I tflite_old/headers \
+  -L tflite_old/jni/armeabi-v7a \
+  -ltensorflowlite_jni -llog -lz -lm -ldl -landroid
+
+# Push and run
+adb push arm/inference_bench /data/local/tmp/inference_bench
+adb push models/blazeface.tflite /sdcard/blazeface.tflite
+adb push tflite_old/jni/armeabi-v7a/libtensorflowlite_jni.so /data/local/tmp/
+adb shell chmod 777 /data/local/tmp/inference_bench
+adb shell "LD_LIBRARY_PATH=/data/local/tmp /data/local/tmp/inference_bench /sdcard/blazeface.tflite"
+```
+
+### 3. Live Phone Camera Detection
 ```bash
 adb shell am start -a android.media.action.STILL_IMAGE_CAMERA
 python src/live_phone.py
 ```
 
-### 3. On-Device Inference (runs ON the phone)
-First push the files to your phone:
+### 4. Laptop Webcam Detection
 ```bash
-adb push models/blazeface.tflite /sdcard/blazeface.tflite
-adb push arm/inference_arm /data/local/tmp/inference_arm
-adb push tflite_old/jni/armeabi-v7a/libtensorflowlite_jni.so /data/local/tmp/libtensorflowlite_jni.so
-adb shell chmod 777 /data/local/tmp/inference_arm
-```
-
-Then run inference ON the phone:
-```bash
-adb shell "LD_LIBRARY_PATH=/data/local/tmp /data/local/tmp/inference_arm"
-```
-
-### 4. Recompile ARM Binary (if needed)
-Download TFLite 2.4.0 AAR and extract it, then:
-```bash
-armv7a-linux-androideabi21-clang -o arm/inference_arm arm/inference.c \
-  -I tflite_old/headers \
-  -L tflite_old/jni/armeabi-v7a \
-  -ltensorflowlite_jni -llog -lz -lm -ldl -landroid
+python src/facedetect.py
 ```
 
 ---
@@ -82,8 +130,9 @@ armv7a-linux-androideabi21-clang -o arm/inference_arm arm/inference.c \
 | RAM | 512MB |
 | Android | 4.1.2 API 16 |
 | Architecture | armeabi-v7a |
+| NEON | 128-bit, no SDOT (ARMv7-A) |
 
 ---
 
 ## Stack
-Python · TensorFlow Lite 2.4.0 · OpenCV · ONNX · Android NDK 29 · C · ADB
+Python · TensorFlow Lite 2.4.0 · OpenCV · ONNX · Android NDK 29 · C · ARM NEON Intrinsics · ADB
