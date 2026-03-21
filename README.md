@@ -162,8 +162,5 @@ armv7a-linux-androideabi21-clang -o arm/inference_arm arm/inference.c \
 ---
 
 ## Stack
-<<<<<<< HEAD
 Python · TensorFlow Lite 2.4.0 · OpenCV · ONNX · Android NDK 29 · C · ARM NEON Intrinsics · ADB
-=======
 Python · TensorFlow Lite 2.4.0 · OpenCV · ONNX · Android NDK 29 · C · ADB
->>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
