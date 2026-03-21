@@ -8,7 +8,7 @@
 **Finding v1** (scalar C): INT8 is 1.35× SLOWER than FP32 — compiler confused by widening
 **Finding v2** (NEON intrinsics): INT8 NEON is 2.5× FASTER than FP32 NEON — hardware was never the problem
 
-=======
+
 > **Research Question:** Can a 224KB neural network run face detection
 > in real-time on a 2013 smartphone with no ML accelerator?
 > **Answer:** Yes — 8.7 FPS on ARM Cortex-A9. And INT8 quantization
@@ -48,7 +48,6 @@ With explicit NEON intrinsics — equal treatment for both precisions — the pi
 | Laptop | Intel CPU + XNNPACK | 2.08ms | 479 |
 | Samsung GT-S7392 | ARM Cortex-A9 | 92ms steady | 10.8 |
 
----
 
 ## What This Means
 
