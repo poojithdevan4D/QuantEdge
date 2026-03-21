@@ -1,6 +1,7 @@
 # QuantEdge 🔬
 ### Hardware-Aware Quantization on Samsung GT-S7392 (2013)
 
+<<<<<<< HEAD
 > **Research Question:** Does INT8 quantization actually improve inference speed on legacy ARM hardware?
 > **Answer:** It depends entirely on implementation quality — not the hardware.
 
@@ -8,6 +9,14 @@
 **Finding v2** (NEON intrinsics): INT8 NEON is 2.5× FASTER than FP32 NEON — hardware was never the problem
 
 ---
+=======
+> **Research Question:** Can a 224KB neural network run face detection
+> in real-time on a 2013 smartphone with no ML accelerator?
+> **Answer:** Yes — 8.7 FPS on ARM Cortex-A9. And INT8 quantization
+> is actually SLOWER than FP32 on this chip.
+> 
+**Key Finding:** INT8 is 1.35x SLOWER than FP32 on ARM Cortex-A9.
+>>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
 
 ## Demo
 
@@ -15,6 +24,7 @@
 
 *BlazeFace running on ARM Cortex-A9 @ 1GHz — face detected at 92% confidence*
 
+<<<<<<< HEAD
 ---
 
 ## Core Finding — March 2026
@@ -55,6 +65,9 @@ Even with the widening overhead (INT8 → INT16 → INT32 accumulation), INT8 NE
 
 TFLite's internal kernel implementation determines whether quantization helps or hurts on ARMv7-A.
 Naive C code gives INT8 a penalty. Optimized NEON intrinsics give INT8 an advantage.
+=======
+Running BlazeFace on ARM Cortex-A9 @ 1GHz | 512MB RAM | Android 4.1.2
+>>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
 
 ---
 
@@ -117,7 +130,29 @@ python src/live_phone.py
 
 ### 4. Laptop Webcam Detection
 ```bash
+<<<<<<< HEAD
 python src/facedetect.py
+=======
+adb push models/blazeface.tflite /sdcard/blazeface.tflite
+adb push arm/inference_arm /data/local/tmp/inference_arm
+adb push tflite_lib/libtensorflowlite_jni.so /data/local/tmp/libtensorflowlite_jni.so
+adb shell chmod 777 /data/local/tmp/inference_arm
+adb shell chmod 777 /data/local/tmp/libtensorflowlite_jni.so
+```
+
+Then run inference ON the phone:
+```bash
+adb shell "LD_LIBRARY_PATH=/data/local/tmp /data/local/tmp/inference_arm"
+```
+
+### 4. Recompile ARM Binary (if needed)
+Download TFLite 2.4.0 AAR and extract it, then:
+```bash
+armv7a-linux-androideabi21-clang -o arm/inference_arm arm/inference.c \
+  -I tflite_old/headers \
+  -L tflite_old/jni/armeabi-v7a \
+  -ltensorflowlite_jni -llog -lz -lm -ldl -landroid
+>>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
 ```
 
 ---
@@ -135,4 +170,8 @@ python src/facedetect.py
 ---
 
 ## Stack
+<<<<<<< HEAD
 Python · TensorFlow Lite 2.4.0 · OpenCV · ONNX · Android NDK 29 · C · ARM NEON Intrinsics · ADB
+=======
+Python · TensorFlow Lite 2.4.0 · OpenCV · ONNX · Android NDK 29 · C · ADB
+>>>>>>> 109a0601cc5944895fd865d89e7a7d1c834cda85
