@@ -179,3 +179,30 @@ bin\llama-server.exe -m "path\to\model.gguf" -ngl 33
 
 # 5. Open browser at http://127.0.0.1:8080
 ```
+
+## Phase 4b — TurboQuant Live Inference on Llama 3.2 3B
+
+**Date:** April 15, 2026
+**Script:** turbo_llama_experiment.py
+
+### What this experiment does
+Hooks into real Llama 3.2 3B attention layers during live inference using PyTorch forward hooks.
+Compresses actual V vectors token by token using TurboQuant 3-bit quantisation.
+Compares baseline vs compressed output quality.
+
+### Results
+| Metric | Value |
+|---|---|
+| Model | Llama 3.2 3B Instruct |
+| Compression | TurboQuant 3-bit V-only |
+| V vectors compressed | 19,936 |
+| Average V MSE | 0.700 |
+| Output quality | Coherent and on-topic |
+
+### Key finding
+K vectors break under 3-bit compression on Llama 3.2 3B due to RoPE positional encoding outliers.
+V-only compression produces coherent output. This is a specific failure mode not documented in the original paper, which was validated on older models without RoPE scaling.
+
+### Hardware
+RTX 3050 Laptop GPU — 4GB VRAM
+Layers 0-9 on GPU, layers 10-27 on CPU RAM via accelerate
